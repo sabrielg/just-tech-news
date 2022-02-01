@@ -1,12 +1,12 @@
 const router = require('express').Router();
-const { User } = require('../../models');
+const { User, Post, Vote } = require('../../models');
 
 // GET /api/users
 router.get('/', (req, res) => {
     User.findAll({
         attributes: { exclude: ['password']}
     })
-    .then(dbUserDate => res.json(dbUserData))
+    .then(dbUserData => res.json(dbUserData))
     .catch(err => {
         console.log(err);
         res.status(500).json(err);
@@ -19,7 +19,19 @@ router.get('/:id', (req, res) => {
         attributes: {exclude: ['password']},
         where: {
             id: req.params.id
-        }
+        },
+        include: [
+            {
+                mode: Post,
+                attributes: ['id', 'title', 'post_url', 'created at']
+            },
+            {
+                model: Post,
+                attributes: ['title'],
+                through: Vote,
+                as: 'voted_posts'
+            }
+        ]
     })
     .then(dbUserData => {
         if(!dbUserData) {
